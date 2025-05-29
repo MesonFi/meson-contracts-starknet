@@ -23,6 +23,14 @@ const TRON_SIGN_HEADER: felt252 = '\x19TRON Signed Message:\n32\n';     // lengt
 const TRON_SIGN_HEADER_33: felt252 = '\x19TRON Signed Message:\n33\n';  // length=25
 const TRON_SIGN_HEADER_53: felt252 = '\x19TRON Signed Message:\n53\n';  // length=25
 
+// Note that this is for the testnet only!
+// keccak256 value for "bytes32 Sign to request a swap on Meson (Testnet)"
+const REQUEST_TYPE_HASH: u256 = 0x7b521e60f64ab56ff03ddfb26df49be54b20672b7acfffc1adeb256b554ccb25;
+// keccak256 value for "bytes32 Sign to request a swap on Meson (Testnet)address Recipient"
+const RELEASE_TYPE_HASH: u256 = 0xd23291d9d999318ac3ed13f43ac8003d6fbd69a4b532aeec9ffad516010a208c;
+// keccak256 value for "bytes32 Sign to release a swap on Mesonaddress Recipient (tron address in hex format)"
+const RELEASE_TO_TRON_TYPE_HASH: u256 = 0x28cf5b919ed55db2b14d9e8b261a523eafb98bab117d3a8a56e559791415d17c;
+
 fn _getEthSignHeaderBytes(is32: bool) -> Bytes {
     let mut bytes = BytesTrait::new_empty();
     let header: u256 = (if is32 { ETH_SIGN_HEADER } else { ETH_SIGN_HEADER_52 }).into();
@@ -39,11 +47,3 @@ fn _getTronSignHeaderBytes(is32: bool, is33: bool) -> Bytes {
     bytes.append_u128(header.low);
     bytes
 }
-
-// Note that this is for the testnet only!
-// keccak256 value for "bytes32 Sign to request a swap on Meson (Testnet)"
-const REQUEST_TYPE_HASH: u256 = 0x7b521e60f64ab56ff03ddfb26df49be54b20672b7acfffc1adeb256b554ccb25;
-// keccak256 value for "bytes32 Sign to request a swap on Meson (Testnet)address Recipient"
-const RELEASE_TYPE_HASH: u256 = 0xd23291d9d999318ac3ed13f43ac8003d6fbd69a4b532aeec9ffad516010a208c;
-// keccak256 value for "bytes32 Sign to release a swap on Mesonaddress Recipient (tron address in hex format)"
-const RELEASE_TO_TRON_TYPE_HASH: u256 = 0x28cf5b919ed55db2b14d9e8b261a523eafb98bab117d3a8a56e559791415d17c;

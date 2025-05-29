@@ -55,14 +55,6 @@ mod MesonStatesComponent {
             }
         }
 
-        fn serviceFeeCollected(
-            self: @ComponentState<TContractState>, 
-            tokenIndex: u8
-        ) -> u256 {
-            let poolTokenIndex: u64 = _poolTokenIndexFrom(tokenIndex, 0);
-            self.balanceOfPoolToken.read(poolTokenIndex)
-        }
-
         fn _depositToken(
             ref self: ComponentState<TContractState>,
             tokenIndex: u8,

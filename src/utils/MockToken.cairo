@@ -47,8 +47,8 @@ mod MockToken {
         ref self: ContractState,
         recipient: ContractAddress,
     ) {
-        let name = 'mockUSDT';
-        let symbol = 'mUSDT';
+        let name = 'USDT';
+        let symbol = 'USDT';
 
         self.erc20.initializer(name, symbol);
         self.erc20._mint(recipient, 1_000_000_000_000000);

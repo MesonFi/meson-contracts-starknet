@@ -166,21 +166,21 @@ fn _tokenType(tokenIndex: u8) -> u8 {
     if tokenIndex >= 192 {
         tokenIndex / 4  // Non stablecoins
     } else {
-        0               // Stablecoins
+        0 // Stablecoins
     }
 }
 
-fn _poolTokenIndexForOutToken(encodedSwap: u256, poolIndex: u64) -> u64 {   // original (uint256, uint40) -> uint48
+fn _poolTokenIndexForOutToken(encodedSwap: u256, poolIndex: u64) -> u64 {
     ((encodedSwap & 0xFF000000) * POW_2_16).try_into().unwrap() | poolIndex
 }
 
-// fn _initiatorFromPosted(postedSwap: u256) -> EthAddress {   // original (uint200) -> address
-//     (postedSwap / POW_2_40).into()
-// }
+fn _initiatorFromPosted(postedSwap: u256) -> EthAddress {
+    ((postedSwap / POW_2_40) & U160_MAX).into()
+}
 
-// fn _poolIndexFromPosted(postedSwap: u256) -> u64 {  // original (uint200) -> uint40
-//     (postedSwap & U40_MAX).try_into().unwrap()
-// }
+fn _poolIndexFromPosted(postedSwap: u256) -> u64 {
+    (postedSwap & U40_MAX).try_into().unwrap()
+}
 
 // fn _lockedSwapFrom(until: u256, poolIndex: u64) -> u128 {   // original (uint256, uint40) -> uint80
 //     ((until * POW_2_40).try_into().unwrap() | poolIndex).into()
