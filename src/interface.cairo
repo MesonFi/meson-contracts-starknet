@@ -11,8 +11,8 @@ pub trait MesonViewStorageTrait<TState> {
     fn ownerOfPool(self: @TState, poolIndex: u64) -> ContractAddress;
     fn poolTokenBalance(self: @TState, token: ContractAddress, addr: ContractAddress) -> u256;
     fn serviceFeeCollected(self: @TState, tokenIndex: u8) -> u256;
-    fn getPostedSwap(self: @TState, encodedSwap: u256) -> (u64, EthAddress, ContractAddress);
-    fn getLockedSwap(self: @TState, swapId: u256) -> (u64, u64, ContractAddress);
+    fn getPostedSwap(self: @TState, encodedSwap: u256) -> (u64, EthAddress, ContractAddress, bool);
+    fn getLockedSwap(self: @TState, swapId: u256) -> (u64, u64, ContractAddress, bool);
 }
 
 #[starknet::interface]

@@ -23,10 +23,10 @@ pub mod MesonStatesComponent {
         pub ownerOfPool: Map<u64, ContractAddress>,
         pub balanceOfPoolToken: Map<u64, u256>,
         pub postedSwaps: Map<
-            u256, (u64, EthAddress, ContractAddress)
+            u256, (u64, EthAddress, ContractAddress, bool)
         >,  // Customized struct cannot be used as the value of Map
         pub lockedSwaps: Map<
-            u256, (u64, u64, ContractAddress)
+            u256, (u64, u64, ContractAddress, bool)
         >,  // Customized struct cannot be used as the value of Map
     }
 
