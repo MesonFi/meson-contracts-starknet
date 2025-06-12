@@ -353,19 +353,35 @@ mod Meson {
             self.emit(events::SwapExecuted { encodedSwap });
         }
 
-        // fn directExecuteSwap(
-        //     ref self: ContractState,
-        //     encodedSwap: u256,
-        //     r: u256,
-        //     yParityAndS: u256,
-        //     initiator: EthAddress,
-        //     recipient: EthAddress
-        // ) {
-        //     self.verifyEncodedSwap(encodedSwap);
-        //     MesonHelpers::_checkReleaseSignature(encodedSwap, recipient, r, yParityAndS, initiator);
+        fn directExecuteSwap(
+            ref self: ContractState,
+            encodedSwap: u256,
+            _r: u256,
+            _yParityAndS: u256,
+            _initiator: EthAddress,
+            _recipient: EthAddress
+        ) {
+            self.simpleExecuteSwap(encodedSwap);
+        }
 
-        // }
+        fn simpleExecuteSwap(ref self: ContractState, encodedSwap: u256) {
+            self.verifyEncodedSwap(encodedSwap);
 
+            self.storage.postedSwaps.write(
+                encodedSwap, (0, 0.try_into().unwrap(), 0_felt252.try_into().unwrap(), true)
+            );
+
+            let amount = MesonHelpers::_amountFrom(encodedSwap);
+            let tokenIndex = MesonHelpers::_inTokenIndexFrom(encodedSwap);
+            let poolTokenIndex = MesonHelpers::_poolTokenIndexFrom(tokenIndex, 1);
+            self.storage.balanceOfPoolToken.write(
+                poolTokenIndex,
+                self.storage.balanceOfPoolToken.read(poolTokenIndex) + amount
+            );
+
+            self.storage._depositToken(tokenIndex, get_caller_address(), amount);
+            self.emit(events::SwapExecuted { encodedSwap });
+        }
     }
 
     #[abi(embed_v0)]
