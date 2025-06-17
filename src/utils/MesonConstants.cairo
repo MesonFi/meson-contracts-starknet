@@ -9,11 +9,9 @@ pub const SERVICE_FEE_RATE: u256 = 5; // service fee = 5 / 10000 = 0.05%
 pub const SERVICE_FEE_MINIMUM: u256 = 500_000; // min $0.5
 pub const SERVICE_FEE_MINIMUM_CORE: u256 = 500; // min 0.0005 ETH ~ $1
 
-pub const CORE_TOKEN_PRICE_FACTOR: u256 = 10;
-
 pub const MIN_BOND_TIME_PERIOD: u256 = 1 * 60 * 60; // 1 hours
 pub const MAX_BOND_TIME_PERIOD: u256 = 2 * 60 * 60; // 2 hours
-pub const LOCK_TIME_PERIOD: u256 = 40 * 60; // 40 minutes
+pub const LOCK_TIME_PERIOD: u256 = 20 * 60; // 20 minutes
 
 // keccak256 value for "bytes32 Sign to request a swap on Meson"
 pub const REQUEST_TYPE_HASH: u256 = 0x9862d877599564bcd97c37305a7b0fdbe621d9c2a125026f2ad601f754a75abc;

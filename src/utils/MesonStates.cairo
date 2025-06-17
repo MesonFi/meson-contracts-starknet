@@ -22,12 +22,8 @@ pub mod MesonStatesComponent {
         pub poolOfAuthorizedAddr: Map<ContractAddress, u64>,
         pub ownerOfPool: Map<u64, ContractAddress>,
         pub balanceOfPoolToken: Map<u64, u256>,
-        pub postedSwaps: Map<
-            u256, (u64, EthAddress, ContractAddress, bool)
-        >,  // Customized struct cannot be used as the value of Map
-        pub lockedSwaps: Map<
-            u256, (u64, u64, ContractAddress, bool)
-        >,  // Customized struct cannot be used as the value of Map
+        pub postedSwaps: Map<u256, (u64, EthAddress, ContractAddress)>,
+        pub lockedSwaps: Map<u256, (u64, u64, ContractAddress)>,
     }
 
     #[generate_trait]       // Internal functions that can be used in son contracts
@@ -39,7 +35,7 @@ pub mod MesonStatesComponent {
             ref self: ComponentState<TContractState>,
             newOwner: ContractAddress
         ) {
-            assert(newOwner.is_non_zero(), 'New owner cannot be zero!');
+            assert(newOwner.is_non_zero(), 'New owner cannot be zero');
             self.owner.write(newOwner);
         }
 
@@ -47,7 +43,7 @@ pub mod MesonStatesComponent {
             ref self: ComponentState<TContractState>,
             newPremiumManager: ContractAddress
         ) {
-            assert(newPremiumManager.is_non_zero(), 'New manager cannot be zero!');
+            assert(newPremiumManager.is_non_zero(), 'New premium manager cannot be zero');
             self.premiumManager.write(newPremiumManager);
         }
 
@@ -60,7 +56,7 @@ pub mod MesonStatesComponent {
             assert(token.is_non_zero(), 'Cannot use zero address');
             assert(self.indexOfToken.read(token) == 0, 'Token has been added before');
             assert(self.tokenForIndex.read(index).is_zero(), 'Index has been used');
-            assert(!_isCoreToken(index), 'Core token not supported');
+            assert(!self._isCoreToken(index), 'Core token not supported');
             self.indexOfToken.write(token, index);
             self.tokenForIndex.write(index, token);
         }
@@ -83,7 +79,7 @@ pub mod MesonStatesComponent {
             amount: u256
         ) {
             assert(amount > 0, 'Amount cannot be 0');
-            assert(!_isCoreToken(tokenIndex), 'Core token not supported');
+            assert(!self._isCoreToken(tokenIndex), 'Core token not supported');
 
             let token: ContractAddress = self.tokenForIndex.read(tokenIndex);
             assert(token.is_non_zero(), 'Token not supported');
@@ -100,7 +96,7 @@ pub mod MesonStatesComponent {
             amount: u256
         ) {
             assert(amount > 0, 'Amount cannot be 0');
-            assert(!_isCoreToken(tokenIndex), 'Core token not supported');
+            assert(!self._isCoreToken(tokenIndex), 'Core token not supported');
 
             let token: ContractAddress = self.tokenForIndex.read(tokenIndex);
             assert(token.is_non_zero(), 'Token not supported');
@@ -108,6 +104,10 @@ pub mod MesonStatesComponent {
             IERC20Dispatcher { contract_address: token }.transfer(
                 recipient, amount * self._amountFactor(tokenIndex)
             );
+        }
+
+        fn _isCoreToken(tokenIndex: u8) -> bool {
+            (tokenIndex >= 49 && tokenIndex <= 64) || ((tokenIndex > 190) && ((tokenIndex % 4) == 3))
         }
 
         fn _amountFactor(

@@ -11,8 +11,8 @@ pub trait MesonViewStorageTrait<TState> {
     fn ownerOfPool(self: @TState, poolIndex: u64) -> ContractAddress;
     fn poolTokenBalance(self: @TState, token: ContractAddress, addr: ContractAddress) -> u256;
     fn serviceFeeCollected(self: @TState, tokenIndex: u8) -> u256;
-    fn getPostedSwap(self: @TState, encodedSwap: u256) -> (u64, EthAddress, ContractAddress, bool);
-    fn getLockedSwap(self: @TState, swapId: u256) -> (u64, u64, ContractAddress, bool);
+    fn getPostedSwap(self: @TState, encodedSwap: u256) -> (u64, EthAddress, ContractAddress);
+    fn getLockedSwap(self: @TState, swapId: u256) -> (u64, u64, ContractAddress);
 }
 
 #[starknet::interface]
@@ -36,7 +36,7 @@ pub trait MesonManagerTrait<TState> {
 #[starknet::interface]
 pub trait MesonSwapTrait<TState> {
     // Modifier
-    fn verifyEncodedSwap(self: @TState, encodedSwap: u256); // Need assert inside
+    fn verifyEncodedSwap(self: @TState, encodedSwap: u256);
 
     // Write functions
     fn postSwap(ref self: TState, encodedSwap: u256, postingValue: u256);
@@ -65,7 +65,7 @@ pub trait MesonSwapTrait<TState> {
 #[starknet::interface]
 pub trait MesonPoolsTrait<TState> {
     // Modifier
-    fn forTargetChain(self: @TState, encodedSwap: u256); // Need assert inside
+    fn forTargetChain(self: @TState, encodedSwap: u256);
 
     // Write functions (LPs)
     fn depositAndRegister(ref self: TState, amount: u256, poolTokenIndex: u64);
@@ -76,13 +76,9 @@ pub trait MesonPoolsTrait<TState> {
     fn transferPoolOwner(ref self: TState, addr: ContractAddress);
 
     // Write functions (users)
-    fn lockSwap(
-        ref self: TState, encodedSwap: u256, initiator: EthAddress, recipient: ContractAddress
-    );
+    fn lockSwap(ref self: TState, encodedSwap: u256, initiator: EthAddress, recipient: ContractAddress);
     fn unlock(ref self: TState, encodedSwap: u256, initiator: EthAddress);
-    fn release(
-        ref self: TState, encodedSwap: u256, r: u256, yParityAndS: u256, initiator: EthAddress
-    );
+    fn release(ref self: TState, encodedSwap: u256, r: u256, yParityAndS: u256, initiator: EthAddress);
     fn directRelease(
         ref self: TState,
         encodedSwap: u256,

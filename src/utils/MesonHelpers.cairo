@@ -13,10 +13,10 @@ use alexandria_bytes::{Bytes, BytesTrait};
 use meson_starknet::utils::MesonConstants;
 
 // Note that there's no `<<` or `>>` operator in cairo.
-const POW_2_255: u256 = 0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000__0000__0000_0000;
+const POW_2_255: u256 = 0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 const POW_2_248: u256 = 0x100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 const POW_2_208: u256 = 0x1_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
-const POW_2_172: u256 = 0x1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+const POW_2_176: u256 = 0x1_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 const POW_2_160: u256 = 0x1_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 const POW_2_128: u256 = 0x1_0000_0000_0000_0000_0000_0000_0000_0000;
 const POW_2_96 : u256 = 0x1_0000_0000_0000_0000_0000_0000;
@@ -32,10 +32,7 @@ const U160_MAX : u256 = 0xffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff;
 const U80_MAX  : u256 = 0xffff_ffff_ffff_ffff_ffff;
 const U64_MAX  : u256 = 0xffff_ffff_ffff_ffff;
 const U40_MAX  : u256 = 0xff_ffff_ffff;
-const U32_MAX  : u256 = 0xffff_ffff;
-const U20_MAX  : u256 = 0xf_ffff;
 const U16_MAX  : u256 = 0xffff;
-const U12_MAX  : u256 = 0xfff;
 const U8_MAX   : u256 = 0xff;
 
 enum MesonErrors {
@@ -84,7 +81,7 @@ pub(crate) fn _feeForLp(encodedSwap: u256) -> u256 {
     (encodedSwap / POW_2_88) & U40_MAX
 }
 
-pub(crate) fn _saltFrom(encodedSwap: u256) -> u128 {    // Original uint256 -> uint80
+pub(crate) fn _saltFrom(encodedSwap: u256) -> u128 {
     ((encodedSwap / POW_2_128) & U80_MAX).try_into().unwrap()
 }
 
@@ -104,18 +101,19 @@ pub(crate) fn _signNonTyped(encodedSwap: u256) -> bool {
     (encodedSwap & 0x0800000000000000000000000000000000000000000000000000) > 0
 }
 
-pub(crate) fn _isCoreToken(tokenIndex: u8) -> bool {
-    (tokenIndex == 52) || ((tokenIndex > 190) && ((tokenIndex % 4) == 3))
-}
-
 pub(crate) fn _swapForCoreToken(encodedSwap: u256) -> bool {
-    !_willTransferToContract(encodedSwap) && (_outTokenIndexFrom(encodedSwap) < 191) &&
-        (encodedSwap & 0x0400000000000000000000000000000000000000000000000000 > 0)
+    (_outTokenIndexFrom(encodedSwap) < 191) &&
+        ((encodedSwap & 0x8410000000000000000000000000000000000000000000000000) == 0x8410000000000000000000000000000000000000000000000000)
 }
 
 pub(crate) fn _amountForCoreTokenFrom(encodedSwap: u256) -> u256 {
     if _swapForCoreToken(encodedSwap) {
-        ((encodedSwap / POW_2_160) & U12_MAX) * 100000
+        let d = (encodedSwap / POW_2_160) & U16_MAX;
+        if d == U16_MAX {
+            _amountFrom(encodedSwap) - _feeForLp(encodedSwap) - (_feeWaived(encodedSwap) ? 0 : _serviceFee(encodedSwap))
+        } else {
+            _decompressFixedPrecision(d) * 1000
+        }
     } else {
         0
     }
@@ -124,10 +122,17 @@ pub(crate) fn _amountForCoreTokenFrom(encodedSwap: u256) -> u256 {
 pub(crate) fn _coreTokenAmount(encodedSwap: u256) -> u256 {
     let amountForCore = _amountForCoreTokenFrom(encodedSwap);
     if amountForCore > 0 {
-        amountForCore * MesonConstants::CORE_TOKEN_PRICE_FACTOR / 
-            ((encodedSwap / POW_2_172) & U20_MAX)
+        amountForCore * 10000 / _decompressFixedPrecision((encodedSwap / POW_2_176) & U16_MAX)
     } else {
         0
+    }
+}
+
+pub(crate) fn _decompressFixedPrecision(d: u256) -> u256 {
+    if d <= 1000 {
+        d
+    } else{
+        ((d - 1000) % 9000 + 1000) * 10 ** ((d - 1000) / 9000)
     }
 }
 
@@ -165,7 +170,7 @@ pub(crate) fn _tokenType(tokenIndex: u8) -> u8 {
         // 3rd party tokens [113, 128] -> [33, 48]
         tokenIndex - 80
     } else {
-        assert(false, 'Token index not allowed!');
+        assert(false, 'Token index not allowed');
         0
     }
 }
@@ -194,15 +199,15 @@ pub(crate) fn _poolIndexFromPosted(postedSwap: u256) -> u64 {
 //     (lockedSwap.into() / POW_2_40).into()
 // }
 
-pub(crate) fn _poolTokenIndexFrom(tokenIndex: u8, poolIndex: u64) -> u64 {     // original (uint8, uint40) -> uint48
+pub(crate) fn _poolTokenIndexFrom(tokenIndex: u8, poolIndex: u64) -> u64 {
     (tokenIndex.into() * POW_2_40).try_into().unwrap() | poolIndex
 }
 
-pub(crate) fn _tokenIndexFrom(poolTokenIndex: u64) -> u8 {     // original (uint48) -> uint8
+pub(crate) fn _tokenIndexFrom(poolTokenIndex: u64) -> u8 {
     (poolTokenIndex.into() / POW_2_40).try_into().unwrap()
 }
 
-pub(crate) fn _poolIndexFrom(poolTokenIndex: u64) -> u64 {     // original (uint48) -> uint40
+pub(crate) fn _poolIndexFrom(poolTokenIndex: u64) -> u64 {
     (poolTokenIndex.into() & U40_MAX).try_into().unwrap()
 }
 
@@ -314,10 +319,10 @@ pub(crate) fn _checkSignature(digest: u256, r: u256, yParityAndS: u256, signer: 
     let s = yParityAndS & 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
     let v: u32 = (yParityAndS / POW_2_255).try_into().unwrap() + 27;
 
-    assert(signer.is_non_zero(), 'Signer cannot be zero!');
+    assert(signer.is_non_zero(), 'Signer cannot be zero');
     assert(
         s <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
-        'Invalid signature!'    
+        'Invalid signature'    
     );
 
     let signature = signature_from_vrs(v, r, s);
