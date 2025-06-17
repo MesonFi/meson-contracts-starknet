@@ -110,7 +110,7 @@ pub(crate) fn _amountForCoreTokenFrom(encodedSwap: u256) -> u256 {
     if _swapForCoreToken(encodedSwap) {
         let d = (encodedSwap / POW_2_160) & U16_MAX;
         if d == U16_MAX {
-            _amountFrom(encodedSwap) - _feeForLp(encodedSwap) - (_feeWaived(encodedSwap) ? 0 : _serviceFee(encodedSwap))
+            _amountFrom(encodedSwap) - _feeForLp(encodedSwap) - if _feeWaived(encodedSwap) { 0 } else { _serviceFee(encodedSwap) }
         } else {
             _decompressFixedPrecision(d) * 1000
         }
@@ -131,8 +131,15 @@ pub(crate) fn _coreTokenAmount(encodedSwap: u256) -> u256 {
 pub(crate) fn _decompressFixedPrecision(d: u256) -> u256 {
     if d <= 1000 {
         d
-    } else{
-        ((d - 1000) % 9000 + 1000) * 10 ** ((d - 1000) / 9000)
+    } else {
+        let exponent: u256 = (d - 1000) / 9000;
+        let mut i: u256 = 0;
+        let mut result: u256 = (d - 1000) % 9000 + 1000;
+        while i != exponent {
+            result = result * 10;
+            i += 1;
+        }
+        result
     }
 }
 

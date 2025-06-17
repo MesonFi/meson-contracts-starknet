@@ -229,7 +229,7 @@ mod Meson {
         fn verifyEncodedSwap(self: @ContractState, encodedSwap: u256) {
             assert(
                 MesonHelpers::_versionFrom(encodedSwap) == MesonConstants::MESON_PROTOCOL_VERSION,
-                "Incorrect encoding version"
+                'Incorrect encoding version'
             );
 
             assert(
@@ -242,7 +242,7 @@ mod Meson {
                 'In & out token types not match'
             );
 
-            let (poolIndex, initiator, fromAddress) = self.getPostedSwap(encodedSwap);
+            let (poolIndex, initiator, _) = self.getPostedSwap(encodedSwap);
             assert(poolIndex == 0 && initiator.is_zero(), 'Swap already exists');
 
             assert(
@@ -271,9 +271,9 @@ mod Meson {
         }
 
         fn bondSwap(ref self: ContractState, encodedSwap: u256, poolIndex: u64) {
-            let (_poolIndex, initiator, fromAddress) = self.getPostedSwap(encodedSwap);
+            let (poolIndex, initiator, fromAddress) = self.getPostedSwap(encodedSwap);
             assert(fromAddress.is_non_zero(), 'Swap does not exist');
-            assert(_poolIndex == 0, 'Swap bonded to others');
+            assert(poolIndex == 0, 'Swap bonded to others');
 
             let callerAddress = get_caller_address();
             assert(
@@ -384,7 +384,7 @@ mod Meson {
         fn forTargetChain(self: @ContractState, encodedSwap: u256) {
             assert(
                 MesonHelpers::_versionFrom(encodedSwap) == MesonConstants::MESON_PROTOCOL_VERSION,
-                "Incorrect encoding version"
+                'Incorrect encoding version'
             );
 
             assert(

@@ -39,7 +39,6 @@ pub trait MesonSwapTrait<TState> {
     fn verifyEncodedSwap(self: @TState, encodedSwap: u256);
 
     // Write functions
-    fn postSwap(ref self: TState, encodedSwap: u256, postingValue: u256);
     fn postSwapFromInitiator(ref self: TState, encodedSwap: u256, postingValue: u256);
     fn bondSwap(ref self: TState, encodedSwap: u256, poolIndex: u64);
     fn cancelSwap(ref self: TState, encodedSwap: u256);
@@ -54,10 +53,10 @@ pub trait MesonSwapTrait<TState> {
     fn directExecuteSwap(
         ref self: TState,
         encodedSwap: u256,
-        _r: u256,
-        _yParityAndS: u256,
-        _initiator: EthAddress,
-        _recipient: EthAddress
+        r: u256,
+        yParityAndS: u256,
+        initiator: EthAddress,
+        recipient: EthAddress
     );
     fn simpleExecuteSwap(ref self: TState, encodedSwap: u256);
 }

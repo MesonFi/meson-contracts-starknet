@@ -11,7 +11,6 @@ pub mod MesonStatesComponent {
     use openzeppelin::token::erc20::interface::{
         IERC20Dispatcher, IERC20DispatcherTrait
     };
-    use meson_starknet::utils::MesonHelpers::_isCoreToken;
 
     #[storage]
     pub struct Storage {
@@ -43,7 +42,7 @@ pub mod MesonStatesComponent {
             ref self: ComponentState<TContractState>,
             newPremiumManager: ContractAddress
         ) {
-            assert(newPremiumManager.is_non_zero(), 'New premium manager cannot be zero');
+            assert(newPremiumManager.is_non_zero(), 'Premium manager cannot be zero');
             self.premiumManager.write(newPremiumManager);
         }
 
@@ -106,7 +105,10 @@ pub mod MesonStatesComponent {
             );
         }
 
-        fn _isCoreToken(tokenIndex: u8) -> bool {
+        fn _isCoreToken(
+            ref self: ComponentState<TContractState>,
+            tokenIndex: u8
+        ) -> bool {
             (tokenIndex >= 49 && tokenIndex <= 64) || ((tokenIndex > 190) && ((tokenIndex % 4) == 3))
         }
 
