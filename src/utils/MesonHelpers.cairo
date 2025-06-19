@@ -48,7 +48,7 @@ pub(crate) fn _getSwapId(encodedSwap: u256, initiator: EthAddress) -> u256 {
     let initiator_u256: u256 = initiator_felt252.into();
     bytes.append_u128_packed(initiator_u256.high, 4);
     bytes.append_u128(initiator_u256.low);
-    compute_keccak_byte_array(@bytes.into())
+    _reverseU256(compute_keccak_byte_array(@bytes.into()))
 }
 
 pub(crate) fn _versionFrom(encodedSwap: u256) -> u8 {
@@ -247,7 +247,7 @@ pub(crate) fn _checkRequestSignature(
     } else {
         let mut msgHashBytes = BytesTrait::new_empty();
         msgHashBytes.append_u256(encodedSwap);
-        let msgHash = compute_keccak_byte_array(@msgHashBytes.into());
+        let msgHash = _reverseU256(compute_keccak_byte_array(@msgHashBytes.into()));
         let bytes = BytesTrait::new(64, array![
             MesonConstants::REQUEST_TYPE_HASH.high,
             MesonConstants::REQUEST_TYPE_HASH.low,
@@ -257,7 +257,7 @@ pub(crate) fn _checkRequestSignature(
         bytes
     };
 
-    let digest = compute_keccak_byte_array(@signingData.into());
+    let digest = _reverseU256(compute_keccak_byte_array(@signingData.into()));
     _checkSignature(digest, r, yParityAndS, signer);
 }
 
