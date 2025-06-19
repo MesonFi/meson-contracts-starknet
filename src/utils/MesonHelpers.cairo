@@ -293,7 +293,7 @@ pub(crate) fn _checkReleaseSignature(
         msgHashBytes.append_u256(encodedSwap);
         msgHashBytes.append_u128_packed(recipient_u256.high, 4);
         msgHashBytes.append_u128(recipient_u256.low);
-        let msgHash = compute_keccak_byte_array(@msgHashBytes.into());
+        let msgHash = _reverseU256(compute_keccak_byte_array(@msgHashBytes.into()));
         let typeHash = if _outChainFrom(encodedSwap) == 0x00c3 {
             MesonConstants::RELEASE_TO_TRON_TYPE_HASH
         } else {
@@ -347,4 +347,28 @@ fn test_check_signature() {
         .try_into().unwrap();
     let recipientAsEth: EthAddress = _ethAddressFromStarknet(recipient);
     _checkReleaseSignature(encoded_swap, recipientAsEth, r, yParityAndS, initiator);
+}
+
+#[test]
+#[available_gas(50000000)]
+fn test_check_signature_to_starknet() {
+    let encoded_swap = 0x0100001e8480c00000000000ce6194f9000000000000685380f2232c0202ca22;
+    let r = 0x08a8cee9d07de32f769b5bf6a4c521cb4f46f89e7d4eac8d5d8d1fb7d1cec4f3;
+    let yParityAndS = 0xb19d16a435da729b9d611b5a61aba694d947a8ce562e51cd515247637fb98ee8;
+    let initiator: EthAddress = 0x666d6b8a44d226150ca9058beebafe0e3ac065a2_u256.into();
+    let recipient: ContractAddress = 0x0376e165aa3fc9248f05f68c4890c96d226f9344345ed8535738beafca4d4640
+        .try_into().unwrap();
+    let recipientAsEth: EthAddress = _ethAddressFromStarknet(recipient);
+    _checkReleaseSignature(encoded_swap, recipientAsEth, r, yParityAndS, initiator);
+}
+
+#[test] 
+#[available_gas(50000000)]
+fn test_check_signature_from_starknet() {
+    let encoded_swap = 0x0100000186a0c0000000000062c8c04c0000000000006852c52e02ca22232c02;
+    let r = 0x65d3472778335379969c01852073f2ba802f55c7b82af977ef3e25b5e6a876f6;
+    let yParityAndS = 0xc745ad6fdba68b8eba55577fff4b86283d1d7147a2df462b20f6a967aff3600f;
+    let initiator: EthAddress = 0xff125c252fca370b7bd65fb87b70d642c6b205e4_u256.into();
+    let recipientEth: EthAddress = 0x594044806c4ad2a64ccf75e22f3132fc0807678d_u256.into();
+    _checkReleaseSignature(encoded_swap, recipientEth, r, yParityAndS, initiator);
 }
